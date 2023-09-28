@@ -1,4 +1,10 @@
 using crud_restapi_challenge;
+using crud_restapi_challenge.Dao;
+using crud_restapi_challenge.Dao.Interfaces;
+using crud_restapi_challenge.Repositories;
+using crud_restapi_challenge.Repositories.Interfaces;
+using crud_restapi_challenge.Services;
+using crud_restapi_challenge.Services.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +29,10 @@ public class Startup
         // Configure the database context
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(_configuration.GetConnectionString("DefaultConnection")));
+
+        services.AddScoped<IItemRepository, ItemRepository>();
+        services.AddScoped<IItemDao, ItemDao>();
+        services.AddScoped<IItemService, ItemService>();
 
         // Register Swagger
         services.AddSwaggerGen(c =>{
