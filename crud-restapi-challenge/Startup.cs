@@ -1,3 +1,4 @@
+using System.Text.Json;
 using crud_restapi_challenge;
 using crud_restapi_challenge.Dao;
 using crud_restapi_challenge.Dao.Interfaces;
@@ -6,12 +7,14 @@ using crud_restapi_challenge.Repositories.Interfaces;
 using crud_restapi_challenge.Services;
 using crud_restapi_challenge.Services.Interfaces;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using crud_restapi_challenge.Exceptions;
 
 public class Startup
 {
@@ -44,8 +47,49 @@ public class Startup
         });
     }
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, AppDbContext context)
     {
+
+        // Register the exception handling middleware first
+        app.UseExceptionHandler(errorApp =>
+        {
+            errorApp.Run(async context =>
+            {
+                context.Response.ContentType = "application/json";
+                var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
+                if (contextFeature != null)
+                {
+                    var ex = contextFeature.Error;
+                    var statusCode = StatusCodes.Status500InternalServerError;
+
+                    // Handle NotFoundException
+                    if (ex is NotFoundException)
+                    {
+                        statusCode = StatusCodes.Status404NotFound;
+                    }
+
+                    context.Response.StatusCode = statusCode;
+
+                    var errorResponse = new
+                    {
+                        StatusCode = statusCode,
+                        Message = ex.Message
+                    };
+
+                    var jsonResponse = JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions
+                    {
+                        WriteIndented = true,
+                    });
+
+                    await context.Response.WriteAsync(jsonResponse);
+                }
+            });
+        });
+
+
+
+        context.Database.EnsureCreated();
+
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
@@ -77,5 +121,6 @@ public class Startup
                 defaults: new { controller = "Home", action = "Index" }
             );
         });
+
     }
 }

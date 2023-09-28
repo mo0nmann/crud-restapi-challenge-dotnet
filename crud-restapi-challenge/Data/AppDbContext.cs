@@ -11,6 +11,14 @@ namespace crud_restapi_challenge
         {
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Item>(entity =>
+            {
+                entity.ToTable("item");
+            });
+        }
+
         public DbSet<Item> Items { get; set; } 
     }
 }

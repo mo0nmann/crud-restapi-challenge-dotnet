@@ -45,7 +45,7 @@ namespace crud_restapi_challenge.Controllers
 
         // PUT: api/items/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateItem(long id, [FromBody] ItemDto itemDto)
+        public async Task<IActionResult> UpdateItem(long id, [FromBody] InputtedItemDto itemDto)
         {
             await _itemService.UpdateItem(id, itemDto.Name, itemDto.Description);
             return Ok();

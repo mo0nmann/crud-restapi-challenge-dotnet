@@ -15,7 +15,15 @@ namespace crud_restapi_challenge.Dao
 
         public async Task<Item> SaveAsync(Item item)
         {
-            await _itemRepository.AddItemAsync(item);
+            // 0 is the default value (uninitialised)
+            if (item.Id == 0) 
+            {
+                await _itemRepository.AddItemAsync(item);
+            }
+            else
+            {
+                await _itemRepository.UpdateItemAsync(item);
+            }
             return item;
         }
 
